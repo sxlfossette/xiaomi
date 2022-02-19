@@ -4,10 +4,13 @@ import router from './router'
 import axios from 'axios'
 // vue-axios把作用域对象挂载到Vue实例上，方便使用this调用
 import VueAxios from 'vue-axios'
+import VueLazyload from 'vue-lazyload'
+import VueCookie from 'vue-cookie'
+import store from './store'
 import App from './App.vue'
 // import env from './env'
 
-const mock = true
+const mock = false
 // require和import的区别：
 // import：是预编译加载，在编译的时候import的文件会写入到内存中
 // require：是执行的时候加载
@@ -31,22 +34,33 @@ axios.interceptors.response.use(function (response) {
   let res = response.data
   // response.data才是取到接口的值
 
+  const path = location.hash
+
   // eslint-disable-next-line eqeqeq
   if (res.status == 0) {
     // 状态码为0，成功
     return res.data
   // eslint-disable-next-line eqeqeq
   } else if (res.status == 10) {
-    // 10未登录
-    window.location.herf = '/#/login'
+    // 如果是其它页面则跳转到首页
+    if (path !== '#/index') {
+      // 10未登录
+      window.location.herf = '/#/login'
+    }
   } else {
     alert(res.msg)
+    return Promise.reject(res)
   }
 })
 Vue.use(VueAxios, axios)
+Vue.use(VueCookie)
+Vue.use(VueLazyload, {
+  loading: '/imgs/loading-svg/loading-bars.svg'
+})
 // productionTip生产环境提示
 Vue.config.productionTip = false
 new Vue({
+  store,
   // 这里的router与上面导入的router名字一致
   router,
   render: h => h(App)
